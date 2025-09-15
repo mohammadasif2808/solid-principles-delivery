@@ -1,21 +1,39 @@
 package com.solid_principles_delivery.service;
 
+import com.solid_principles_delivery.command.LibraryCommand;
 import com.solid_principles_delivery.observer.LibraryEventListener;
 import com.solid_principles_delivery.singleton.LibraryDatabase;
 import lombok.Getter;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 // Implementation of LibraryOperations demonstrating Observer Pattern and DIP
 public class LibraryService implements LibraryOperations {
     private final LibraryDatabase database;
     @Getter
     private final List<LibraryEventListener> listeners;
+    private final Queue<LibraryCommand> commandHistory;
 
     public LibraryService() {
         this.database = LibraryDatabase.getInstance();
         this.listeners = new ArrayList<>();
+        this.commandHistory = new LinkedList<>();
+    }
+
+    public void executeCommand(LibraryCommand command) {
+        if (command.execute()) {
+            commandHistory.offer(command);
+        }
+    }
+
+    public void undoLastCommand() {
+        LibraryCommand lastCommand = commandHistory.poll();
+        if (lastCommand != null) {
+            lastCommand.undo();
+        }
     }
 
     public void addListener(LibraryEventListener listener) {
